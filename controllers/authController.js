@@ -370,7 +370,7 @@ export const sendResetOtp = async (req, res) => {
                     message:"user not found"
                 })
             }
-            else if ( user.resetOtp === "") {
+            else if ( user.resetOtp === ""||user.resetOtp!==otp) {
                 return res.status(400).json({
                     success: false,
                     message: "otp not sent successfully"
