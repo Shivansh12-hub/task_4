@@ -356,7 +356,7 @@ export const sendResetOtp = async (req, res) => {
         const { email, otp, newPassword } = req.body;
 
         if (!email || !otp || !newPassword) {
-            return res.json({
+            return res.status(400).json({
                 success: false,
                 message: "Enter all require entries",
             });
@@ -365,19 +365,19 @@ export const sendResetOtp = async (req, res) => {
         try {
             const user = await userModel.findOne({ email });
             if (!user) {
-                return res.json({
+                return res.status(400).json({
                     success: false,
                     message:"user not found"
                 })
             }
             else if ( user.resetOtp === "") {
-                return res.json({
+                return res.status(400).json({
                     success: false,
                     message: "otp not sent successfully"
                 });
             }
             else if (user.resetOtpExpireAt < Date.now()) {
-                return res.json({
+                return res.status(400).json({
                     success: false,
                     message:"OTP expires"
                 })
@@ -389,7 +389,7 @@ export const sendResetOtp = async (req, res) => {
                 minNumbers: 1,
                 minSymbols: 1
                 })) {
-                    return res.json({
+                    return res.status(400).json({
                         success: false,
                         message: "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character"
                     });
