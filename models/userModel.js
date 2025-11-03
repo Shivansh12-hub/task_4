@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema({
 userSchema.index(
     { createdAt: 1 }, 
     { 
-        expireAfterSeconds: 60*60,
+        expireAfterSeconds: 3600,
         partialFilterExpression: { isAccountVerified:false}
     }
 )
