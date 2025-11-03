@@ -197,7 +197,7 @@ export const verifyEmail = async (req, res) => {
     const userId = req.userId; 
 
     if (!otp) {
-        return res.json({
+        return res.status(400).json({
             success: false,
             message: "Missing OTP"
         });
@@ -214,14 +214,14 @@ export const verifyEmail = async (req, res) => {
         }
 
         if (user.verifyOtp !== otp) {
-            return res.json({
+            return res.status(400).json({
                 success: false,
                 message: "Invalid OTP"
             });
         }
 
         if (user.verifyOtpExpireAt < Date.now()) {
-            return res.json({
+            return res.status(400).json({
                 success: false,
                 message: "OTP Expired"
             });
