@@ -20,7 +20,7 @@ userModel.createIndexes();
 
 app.use(
     cors({
-        origin: "http://localhost:3000",
+        origin: "https://game-recommeder.vercel.app",
         credentials:true,
     })
 )
