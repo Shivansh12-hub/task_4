@@ -20,7 +20,8 @@ userModel.createIndexes();
 app.use(
     cors({
         origin: "*",
-        credentials:true,
+        credentials:false,
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     })
 )
 
