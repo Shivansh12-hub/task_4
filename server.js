@@ -19,12 +19,12 @@ userModel.createIndexes();
 
 app.use(
     cors({
-        origin: "https://game-recommeder.vercel.app",
+        origin: "http://localhost:3000",
         credentials:true,
     })
 )
 
-app.set("trust proxy", 1);
+app.set("trust proxy",1);
 
 // api end points 
 app.get("/", (req, res) => res.send("api working"));
