@@ -176,20 +176,23 @@ export const logout = async (req, res) => {
         res.clearCookie('token', {
             httpOnly: true,
             secure: true,
-            sameSite:"None",
-        })
+            sameSite: "None",
+        });
 
-        return res.json({
+        return res.status(200).json({   
             success: true,
-            message:"logged Out"
-        })
+            message: "Logged out successfully"
+        });
+
     } catch (error) {
-        return res.json({
+        console.error(error);
+        return res.status(500).json({ 
             success: false,
-            message:error.message
-        })
+            message: error.message
+        });
     }
-}
+};
+
 
 
 
@@ -262,153 +265,153 @@ export const isAuthenticated = async (req, res) => {
     }
 }
 
-
 export const sendResetOtp = async (req, res) => {
     const { email } = req.body;
 
     if (!email) {
-        return res.json({
+        return res.status(400).json({   
             success: false,
-            message:"Email is require"
-        })
+            message: "Email is required"
+        });
     }
+
     try {
-        
-        const user = await userModel.findOne({ email, });
+        const user = await userModel.findOne({ email });
+
         if (!user) {
-            return res.json({
+            return res.status(404).json({  
                 success: false,
                 message: "User not found"
             });
         }
+
         const otp = String(Math.floor(100000 + Math.random() * 900000));
         user.resetOtp = otp;
         user.resetOtpExpireAt = Date.now() + 6 * 60 * 1000; // 6 minutes
         await user.save();
 
         const msg = {
-  to: email,
-  from: process.env.G_USER, // verified sender
-  subject: "Password Reset OTP - Game Recommender",
-  text: `Hello , your OTP for resetting your password is ${otp}. It will expire in 6 minutes. If you didn’t request this, please ignore this email.`,
-  html: `
-  <html>
-    <body style="font-family: Arial, sans-serif; background-color: #ffffff; color: #000000; margin: 0; padding: 0;">
-      <div style="max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-        <h2 style="text-align:center; color:#333;">Password Reset Request</h2>
-
-        <p>Hello ,</p>
-
-        <p>We received a request to reset your password for your Game Recommender account. Use the following One-Time Password (OTP) to proceed:</p>
-
-        <div style="text-align:center; font-size: 24px; font-weight: bold; margin: 20px 0; letter-spacing: 2px;">
-          ${otp}
-        </div>
-
-        <p>This OTP is valid for <strong>6 minutes</strong>. Please do not share it with anyone.</p>
-
-        <p>If you didn’t request this, simply ignore this email — your password will remain unchanged.</p>
-
-        <p>Thank you,<br/>The Game Recommender Team</p>
-
-        <hr style="border:none; border-top:1px solid #eee; margin-top:30px;">
-        <p style="font-size: 12px; color: #666; text-align: center;">
-          This is an automated message. Please do not reply.
-        </p>
-      </div>
-    </body>
-  </html>
-  `
-};
-
+            to: email,
+            from: process.env.G_USER, 
+            subject: "Password Reset OTP - Game Recommender",
+            text: `Hello, your OTP for resetting your password is ${otp}. It will expire in 6 minutes. If you didn’t request this, please ignore this email.`,
+            html: `
+            <html>
+              <body style="font-family: Arial, sans-serif; background-color: #ffffff; color: #000000; margin: 0; padding: 0;">
+                <div style="max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+                  <h2 style="text-align:center; color:#333;">Password Reset Request</h2>
+                  <p>Hello,</p>
+                  <p>We received a request to reset your password for your Game Recommender account. Use the following One-Time Password (OTP) to proceed:</p>
+                  <div style="text-align:center; font-size: 24px; font-weight: bold; margin: 20px 0; letter-spacing: 2px;">
+                    ${otp}
+                  </div>
+                  <p>This OTP is valid for <strong>6 minutes</strong>. Please do not share it with anyone.</p>
+                  <p>If you didn’t request this, simply ignore this email — your password will remain unchanged.</p>
+                  <p>Thank you,<br/>The Game Recommender Team</p>
+                  <hr style="border:none; border-top:1px solid #eee; margin-top:30px;">
+                  <p style="font-size: 12px; color: #666; text-align: center;">
+                    This is an automated message. Please do not reply.
+                  </p>
+                </div>
+              </body>
+            </html>
+            `
+        };
 
         try {
             await sgmail.send(msg);
-            console.log("Email from to", process.env.G_USER);
-            console.log("Email sent to", email);
-            } catch (error) {
-                console.error(" Error sending email:", error);
-
-            return res.json({
+            console.log("Email sent from:", process.env.G_USER);
+            console.log("Email sent to:", email);
+        } catch (error) {
+            console.error("Error sending email:", error);
+            return res.status(500).json({   
                 success: false,
-                message: error.message,
+                message: "Failed to send OTP email",
+                error: error.message
             });
-        };
+        }
 
-
-        return res.json({
+        return res.status(200).json({   
             success: true,
-            message: "Otp is successfully send to your email"
+            message: "OTP successfully sent to your email"
         });
 
     } catch (error) {
-        return res.json({
+        console.error("Error while generating/sending OTP:", error);
+        return res.status(500).json({    
             success: false,
-            message: "Error occur while sending otp ",
-            message: error.message
+            message: "Error occurred while sending OTP",
+            error: error.message
         });
     }
-}
+};
 
-// reset user password
 
-    export const resetPassword = async (req, res)=>{
+export const resetPassword = async (req, res) => {
+    const { email, otp, newPassword } = req.body;
 
-        const { email, otp, newPassword } = req.body;
+    if (!email || !otp || !newPassword) {
+        return res.status(400).json({
+            success: false,
+            message: "Enter all required fields",
+        });
+    }
 
-        if (!email || !otp || !newPassword) {
-            return res.status(400).json({
+    try {
+        const user = await userModel.findOne({ email });
+        if (!user) {
+            return res.status(404).json({
                 success: false,
-                message: "Enter all require entries",
+                message: "User not found",
             });
         }
 
-        try {
-            const user = await userModel.findOne({ email });
-            if (!user) {
-                return res.status(400).json({
-                    success: false,
-                    message:"User not found"
-                })
-            }
-            else if ( user.resetOtp === ""||user.resetOtp!==otp) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Invalid otp "
-                });
-            }
-            else if (user.resetOtpExpireAt < Date.now()) {
-                return res.status(400).json({
-                    success: false,
-                    message:"OTP expires"
-                })
-            }
-            if (!validator.isStrongPassword(newPassword, {
-                minLength: 8,
-                minLowercase: 1,
-                minUppercase: 1,
-                minNumbers: 1,
-                minSymbols: 1
-                })) {
-                    return res.status(400).json({
-                        success: false,
-                        message: "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character"
-                    });
-                }
-            const hashedPassword = await bcrypt.hash(newPassword, 10);
-            user.password = hashedPassword;
-            user.resetOtp = "";
-            user.resetOtpExpireAt = 0;
-            await user.save();
-            return res.json({
-                    success: true,
-                    message: "otp verified successfully"
-                });
-            
-        } catch (error) {
-            return res.json({
+        if (user.resetOtp === "" || user.resetOtp !== otp) {
+            return res.status(401).json({
                 success: false,
-                message:error.message
-            })
+                message: "Invalid OTP",
+            });
         }
+
+        if (user.resetOtpExpireAt < Date.now()) {
+            return res.status(410).json({ // 410 Gone = OTP expired
+                success: false,
+                message: "OTP expired",
+            });
+        }
+
+        // ✅ Validate password strength
+        if (!validator.isStrongPassword(newPassword, {
+            minLength: 8,
+            minLowercase: 1,
+            minUppercase: 1,
+            minNumbers: 1,
+            minSymbols: 1,
+        })) {
+            return res.status(400).json({
+                success: false,
+                message: "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character",
+            });
+        }
+
+        // ✅ Hash and save new password
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
+        user.resetOtp = "";
+        user.resetOtpExpireAt = 0;
+        await user.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Password reset successfully",
+        });
+
+    } catch (error) {
+        console.error("Error in resetPassword:", error);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+            error: error.message,
+        });
     }
+};
