@@ -6,24 +6,23 @@ const getUserData = async (req, res) => {
     const token = req.cookies.token;
 
     if (!token) {
-      return res.json({
+      return res.status(401).json({
         success: false,
         message: "No token found, please login again",
       });
     };
-
     
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.id; 
     const user = await userModel.findById(userId);
     if (!user) {
-      return res.json({
+      return res.status(400).json({
         success: false,
         message: "User not found",
       });
     }
 
-    res.json({
+    res.status(200).json({
       success: true,
       userData: {
         name: user.name,
