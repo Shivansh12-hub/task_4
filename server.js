@@ -20,36 +20,14 @@ userModel.createIndexes();
 
 
 
-// app.use(
-//     cors({
-//         origin: "http://localhost:3000",
-//         credentials:true,
-//     })
-// )
-
-
-
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://your-frontend.vercel.app"   // 👈 Replace with your actual Vercel URL
-];
-
-// ✅ Dynamic CORS setup
 app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like Postman)
-      if (!origin) return callback(null, true);
+    cors({
+        origin: "http://localhost:3000",
+        credentials:true,
+    })
+)
 
-      if (allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true,
-  })
-);
+
 
 app.set("trust proxy",1);
 
