@@ -116,59 +116,59 @@ export const register = async (req, res) => {
     }
 }
 
-
 export const login = async (req, res) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-        return res.json({
+        return res.status(400).json({   
             success: false,
-            message:"Enter all entries"
-        })
+            message: "Enter all entries"
+        });
     }
+
     try {
         const user = await userModel.findOne({ email });
 
         if (!user) {
-            return res.json({
+            return res.status(404).json({   
                 success: false,
-                message:"User do not exist"
-            })
-        };
+                message: "User does not exist"
+            });
+        }
 
         const isMatch = await bcrypt.compare(password, user.password);
-        
+
         if (!isMatch) {
-            return res.json({
+            return res.status(401).json({   
                 success: false,
-                message:"Password incorrect"
-            })
+                message: "Password incorrect"
+            });
         }
 
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '4d' });
 
         res.cookie('token', token, {
             httpOnly: true,
-            secure:true,
-            sameSite:"None",
+            secure: true,
+            sameSite: "None",
             maxAge: 7 * 24 * 60 * 60 * 1000
-        })
+        });
 
-        return res.json({
+        return res.status(200).json({   
             success: true,
-            message: "user loged in success",
-            data:user
-        })
+            message: "User logged in successfully",
+            data: user
+        });
 
-        
     } catch (error) {
-        res.json({
-            success: false, 
-            message: "login failed",
-            message:error.message
-        })
+        console.error(error);
+        return res.status(500).json({       
+            success: false,
+            message: "Login failed",
+            error: error.message
+        });
     }
-}
+};
 
 
 export const logout = async (req, res) => {
@@ -190,6 +190,7 @@ export const logout = async (req, res) => {
         })
     }
 }
+
 
 
 export const verifyEmail = async (req, res) => {
