@@ -19,9 +19,8 @@ userModel.createIndexes();
 
 app.use(
     cors({
-        origin: "*",
-        credentials:false,
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        origin: "https://game-recommeder.vercel.app",
+        credentials:true,
     })
 )
 
