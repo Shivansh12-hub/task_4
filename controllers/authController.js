@@ -6,45 +6,155 @@ import sgmail from "@sendgrid/mail"
 sgmail.setApiKey(process.env.SENDGRID_API_KEY);
 
 
+// export const register = async (req, res) => {
+//     const { name, email, password } = req.body;
+
+//     if (!name || !email || !password) {
+//         return res.json({
+//             success: false,
+//             message:"Enter all entries"
+//         })
+//     }
+
+//     if (!validator.isEmail(email)) {
+//         return res.json({
+//             success: false,
+//             message:"Envalid email please enter a valid email"
+//         })
+    
+//     }
+//     if (!validator.isStrongPassword(password, {
+//     minLength: 8,
+//     minLowercase: 1,
+//     minUppercase: 1,
+//     minNumbers: 1,
+//     minSymbols: 1
+//     })) {
+//         return res.json({
+//             success: false,
+//             message: "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character"
+//         });
+//     }
+
+//     try {
+//         const existingUser = await userModel.findOne({ email });
+//         if (existingUser) {
+//             return res.json({
+//                 success:false,
+//                 message: "User already exist"
+//             })
+//         }
+
+//         const hashedPassword = await bcrypt.hash(password, 10);
+
+//         const user = new userModel({ name, email, password: hashedPassword });
+//         await user.save();
+
+//         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '4d' });
+
+//         res.cookie('token', token, {
+//             httpOnly: true,
+//             secure: true,
+//             sameSite:"None",
+//             maxAge: 7 * 24 * 60 * 60 * 1000
+//         });
+
+
+//         const otp = String(Math.floor(100000 + Math.random() * 900000));
+//         user.verifyOtp = otp;
+//         user.verifyOtpExpireAt = Date.now() + 6 * 60 * 1000; // 6 minutes
+//         await user.save();
+
+
+//         const msg = {
+//   to: email,
+//   from: process.env.G_USER,
+//   subject: "Your OTP Code for Account Verification",
+//   text: `Hello ${name}, your OTP code is ${otp}. It is valid for 6 minutes.`,
+//   html: `
+//   <html>
+//     <body style="font-family: Arial, sans-serif; background-color: #ffffff; color: #000000; margin: 0; padding: 0;">
+//       <div style="max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+//         <h2 style="text-align:center; color:#333;">Account Verification</h2>
+//         <p>Hello ${name},</p>
+//         <p>Your One-Time Password (OTP) for verifying your account is:</p>
+//         <div style="text-align:center; font-size: 24px; font-weight: bold; margin: 20px 0;">${otp}</div>
+//         <p>This OTP is valid for 6 minutes. Please do not share it with anyone.</p>
+//         <p>Thank you,<br/>Game Recommender Team</p>
+//       </div>
+//     </body>
+//   </html>
+//   `
+// };
+        
+//         try {
+//             await sgmail.send(msg);
+//             console.log("Email from to",process.env.G_USER)
+//             console.log("Email sent to", email);
+//             } catch (error) {
+//                 console.error(" Error sending email:", error);
+
+//              return res.json({
+//                 success: false,
+//                 message: error.message,
+//             });
+//         };
+
+
+//          return res.json({
+//             success:true
+//         })
+//     } catch (error) {
+//         console.error(error);
+//         res.json({
+//             success: false,
+//             message: "Registration failed",
+//             message: error.message
+//         });
+//     }
+// }
+
+
+
+
+
 export const register = async (req, res) => {
     const { name, email, password } = req.body;
 
     if (!name || !email || !password) {
-        return res.json({
+        return res.status(400).json({
             success: false,
-            message:"Enter all entries"
-        })
+            message: "Enter all entries"
+        });
     }
 
     if (!validator.isEmail(email)) {
-        return res.json({
+        return res.status(400).json({
             success: false,
-            message:"Envalid email please enter a valid email"
-        })
-    
+            message: "Envalid email please enter a valid email"
+        });
     }
+
     if (!validator.isStrongPassword(password, {
-    minLength: 8,
-    minLowercase: 1,
-    minUppercase: 1,
-    minNumbers: 1,
-    minSymbols: 1
+        minLength: 8,
+        minLowercase: 1,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1
     })) {
-        return res.json({
+        return res.status(400).json({
             success: false,
             message: "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character"
         });
     }
 
-
-
     try {
         const existingUser = await userModel.findOne({ email });
         if (existingUser) {
-            return res.json({
-                success:false,
+            return res.status(409).json({
+                success: false,
                 message: "User already exist"
-            })
+            });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -57,64 +167,70 @@ export const register = async (req, res) => {
         res.cookie('token', token, {
             httpOnly: true,
             secure: true,
-            sameSite:"None",
+            sameSite: "None",
             maxAge: 7 * 24 * 60 * 60 * 1000
         });
-
 
         const otp = String(Math.floor(100000 + Math.random() * 900000));
         user.verifyOtp = otp;
         user.verifyOtpExpireAt = Date.now() + 6 * 60 * 1000; // 6 minutes
         await user.save();
 
-
         const msg = {
-  to: email,
-  from: process.env.G_USER, 
-  subject: "Your OTP Code for Account Verification",
-  text: `Hello ${name}, your OTP code is ${otp}. It is valid for 6 minutes.`,
-  html: `
-  <html>
-    <body style="font-family: Arial, sans-serif; background-color: #ffffff; color: #000000; margin: 0; padding: 0;">
-      <div style="max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
-        <h2 style="text-align:center; color:#333;">Account Verification</h2>
-        <p>Hello ${name},</p>
-        <p>Your One-Time Password (OTP) for verifying your account is:</p>
-        <div style="text-align:center; font-size: 24px; font-weight: bold; margin: 20px 0;">${otp}</div>
-        <p>This OTP is valid for 6 minutes. Please do not share it with anyone.</p>
-        <p>Thank you,<br/>Game Recommender Team</p>
-      </div>
-    </body>
-  </html>
-  `
-};
-        
+            to: email,
+            from: process.env.G_USER,
+            subject: "Your OTP Code for Account Verification",
+            text: `Hello ${name}, your OTP code is ${otp}. It is valid for 6 minutes.`,
+            html: `
+            <html>
+              <body style="font-family: Arial, sans-serif; background-color: #ffffff; color: #000000; margin: 0; padding: 0;">
+                <div style="max-width: 500px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+                  <h2 style="text-align:center; color:#333;">Account Verification</h2>
+                  <p>Hello ${name},</p>
+                  <p>Your One-Time Password (OTP) for verifying your account is:</p>
+                  <div style="text-align:center; font-size: 24px; font-weight: bold; margin: 20px 0;">${otp}</div>
+                  <p>This OTP is valid for 6 minutes. Please do not share it with anyone.</p>
+                  <p>Thank you,<br/>Game Recommender Team</p>
+                </div>
+              </body>
+            </html>
+            `
+        };
+
         try {
             await sgmail.send(msg);
-            console.log("Email from to",process.env.G_USER)
-            console.log("Email sent to", email);
-            } catch (error) {
-                console.error(" Error sending email:", error);
-
-             return res.json({
+            console.log("Email from:", process.env.G_USER);
+            console.log("Email sent to:", email);
+        } catch (error) {
+            console.error("Error sending email:", error);
+            return res.status(500).json({
                 success: false,
                 message: error.message,
             });
-        };
+        }
 
+        return res.status(201).json({
+            success: true,
+            message: "User registered successfully. OTP sent to email."
+        });
 
-         return res.json({
-            success:true
-        })
     } catch (error) {
         console.error(error);
-        res.json({
+        res.status(500).json({
             success: false,
             message: "Registration failed",
-            message: error.message
+            error: error.message
         });
     }
-}
+};
+
+
+
+
+
+
+
+
 
 export const login = async (req, res) => {
     const { email, password } = req.body;
